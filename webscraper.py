@@ -1,6 +1,9 @@
-import requests
 import os
 from bs4 import BeautifulSoup
+import requests
+
+
+
 def get_product_info(url, output_file):
     # Web sitesinden sayfayı indir
     response = requests.get(url)
@@ -13,17 +16,16 @@ def get_product_info(url, output_file):
         # Başlıkları ve ilgili ürünleri bul
         categories = soup.find_all('div', class_='headline')
 
-        # Dosyayı yazma modunda aç
-        with open(output_file, 'w', encoding='utf-8') as file:
 
+
+        # Dosyayı yazma modunda aç
+        with open(output_file, 'a', encoding='utf-8') as file:
+            file.write(f"\n{url}\n{'*=' * len(url)}"+"*\n")
             # Her bir başlık için ürünleri çek
             for category in categories:
                 # Başlık adını çek
                 category_name = category.find('h2').text.strip()
 
-                        # Dosya yolunu oluştur
-                script_directory = os.path.dirname(os.path.abspath(__file__))
-                output_file_path = os.path.join(script_directory, output_file)
 
 
                 # Başlığı dosyaya yaz
@@ -48,16 +50,32 @@ def get_product_info(url, output_file):
                     file.write(f"Fiyat: {price}\n")
                     file.write("-" * 30 + "\n")
 
-        print(f"Veriler '{output_file_path}' dosyasına yazıldı.")
+            print(f"{url} urlindeki veriler 'product_info.txt' dosyasına yazıldı.")
 
     else:
         print(f"Error: {response.status_code}")
 
-# Kategori sayfasının URL'si
-category_url = "https://www.pttavm.com/elektronik"
+def process_urls_from_file(file_path):
+    # Dosyadaki URL'leri oku
+    script_directory = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(script_directory, file_path)
+    with open(file_path, 'r', encoding='utf-8') as url_file:
+        
+        # Her bir URL için get_product_info fonksiyonunu çağır
+        for url in url_file:
+            # Satırdaki boşlukları temizle
+            url = url.strip()
+            
+            # get_product_info fonksiyonunu çağır
+            get_product_info(url, output_file_path)
 
 # Dosya adı
 output_file = "product_info.txt"
+# Dosya yolunu oluştur
+script_directory = os.path.dirname(os.path.abspath(__file__))
+output_file_path = os.path.join(script_directory, output_file)
+# URL'leri içeren dosyanın adı
+url_file_path = "url_list.txt"
 
-# Fonksiyonu çağır
-get_product_info(category_url, output_file)
+# URL'leri işle
+process_urls_from_file(url_file_path)
